@@ -23,12 +23,13 @@ Um aplicativo inteligente para pesquisa de jurisprudência, análise de preceden
 
 ## Como Começar
 
-Siga estas instruções para configurar e executar o projeto em seu ambiente local.
+Siga estas instruções para configurar e executar o projeto.
 
 ### Pré-requisitos
 
 *   [Git](https://git-scm.com/) instalado.
 *   Um navegador web moderno (Chrome, Firefox, Edge, Safari).
+*   [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e rodando (inclui Docker Compose).
 *   Uma chave de API válida para o Google Gemini. Você pode obter uma no [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### 1. Clonar o Repositório
@@ -47,45 +48,59 @@ cd path/to/your/jurisintel-dashboard
 
 O aplicativo requer uma chave de API do Google Gemini para funcionar.
 
-**a. Crie um arquivo `.env` (Opcional, mas boa prática para referência):**
-
-Na raiz do seu projeto, crie um arquivo chamado `.env` e adicione sua chave de API:
+Crie um arquivo `.env.local` na raiz do seu projeto e adicione sua chave de API. Este arquivo será lido pelo processo de build do Docker.
 
 ```env
-API_KEY=SUA_CHAVE_API_DO_GEMINI_AQUI
+VITE_API_KEY=SUA_CHAVE_API_DO_GEMINI_AQUI
 ```
 
-**Importante:** Este arquivo `.env` **não será lido diretamente pelo navegador** na configuração atual do projeto (que não usa Node.js no backend ou um processo de build como Vite/Webpack para injetar variáveis de ambiente). Ele serve como um local seguro para você armazenar sua chave e como referência.
+**Importante:** O nome da variável de ambiente deve começar com `VITE_` para ser exposta ao código frontend pelo Vite dentro do container Docker durante o build.
 
-**b. Disponibilizando a API Key para o Aplicativo em Desenvolvimento Local:**
+### 3. Executar com Docker Compose
 
-Como este é um projeto frontend que utiliza `process.env.API_KEY` no arquivo `services/geminiService.ts`, e não há um processo de build configurado para substituir essa variável, você precisará fornecer a chave de outra forma para testes locais:
+Navegue até o diretório raiz do projeto no seu terminal.
 
-1.  Abra o arquivo `services/geminiService.ts`.
-2.  Localize a linha:
-    ```javascript
-    const API_KEY = process.env.API_KEY;
+Execute o script `docker-setup.sh` para construir a imagem, iniciar o container e configurar o volume compartilhado para relatórios. Este script também removerá todos os recursos do Docker ao ser interrompido (Ctrl+C).
+
+```bash
+chmod +x ./docker-setup.sh
+./docker-setup.sh
+```
+
+O aplicativo estará disponível em `http://localhost:5005`.
+
+Os relatórios gerados serão salvos na pasta `reports` na raiz do seu projeto local, que é compartilhada com o container Docker.
+
+Para parar a aplicação e limpar os recursos do Docker, pressione `Ctrl+C` no terminal onde o script está rodando.
+
+### Execução Manual com Docker Compose (Alternativa)
+
+Se preferir, você pode gerenciar os contêineres manualmente:
+
+*   **Construir a imagem:**
+
+    ```bash
+    docker-compose build
     ```
-3.  **Temporariamente**, para fins de desenvolvimento local, modifique esta linha para incluir sua chave de API diretamente. Você pode comentar a linha original e adicionar a nova:
-    ```javascript
-    // const API_KEY = process.env.API_KEY; // Linha original comentada
-    const API_KEY = "SUA_CHAVE_API_DO_GEMINI_AQUI"; // Adicione sua chave real aqui
+
+*   **Iniciar os contêineres:**
+
+    ```bash
+    docker-compose up -d
     ```
-4.  **AVISO DE SEGURANÇA MUITO IMPORTANTE:**
-    *   **NUNCA FAÇA COMMIT DESTA ALTERAÇÃO COM SUA CHAVE DE API VISÍVEL PARA O SEU REPOSITÓRIO GIT PÚBLICO OU COMPARTILHADO.**
-    *   Esta é uma solução **apenas para teste local**.
-    *   Lembre-se de remover sua chave codificada ou reverter para `process.env.API_KEY` antes de fazer commit ou compartilhar o código extensivamente.
 
-**Para um ambiente de produção ou um fluxo de desenvolvimento mais robusto:** Você deve usar um processo de build (com ferramentas como Vite ou Webpack) que possa substituir `process.env.API_KEY` pelo valor real durante a compilação, ou servir o aplicativo através de um backend que possa injetar a chave de forma segura, ou usar um proxy para as chamadas de API.
+*   **Verificar os logs:**
 
-### 3. Executar a Aplicação Localmente
+    ```bash
+    docker-compose logs -f
+    ```
 
-Após configurar a chave da API conforme o passo anterior (modificando `services/geminiService.ts` temporariamente):
+*   **Parar os contêineres e remover volumes e imagens:**
 
-1.  Certifique-se de que todos os arquivos (`index.html`, `index.tsx`, `App.tsx`, etc.) estão na mesma estrutura de diretórios que você recebeu.
-2.  Abra o arquivo `index.html` diretamente no seu navegador web.
+    ```bash
+    docker-compose down --volumes --rmi all
+    ```
 
-O aplicativo deve carregar e estar pronto para uso.
 
 ## Configurando o Repositório no GitHub (Se você ainda não o fez)
 

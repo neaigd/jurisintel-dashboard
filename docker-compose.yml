@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  jurisintel_app:
+    build:
+      context: .
+    ports:
+      - "5005:85"
+    volumes:
+      - reports_volume:/app/reports
+
+volumes:
+  reports_volume:
+    driver: local

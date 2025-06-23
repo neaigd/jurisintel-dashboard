@@ -2,9 +2,10 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import type { LegalAnalysisResponse } from '../types';
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.VITE_API_KEY;
 if (!API_KEY) {
-  throw new Error("API_KEY não configurada nas variáveis de ambiente.");
+  // Updated error message to reflect the correct variable name for Vite
+  throw new Error("VITE_API_KEY não configurada nas variáveis de ambiente. Certifique-se de que está em um arquivo .env.local na raiz do projeto.");
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
