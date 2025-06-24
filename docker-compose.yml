@@ -5,7 +5,7 @@ services:
     build:
       context: .
     ports:
-      - "5005:85"
+      - "5005:80"
     volumes:
       - reports_volume:/app/reports
 
